@@ -2,8 +2,8 @@
              FlexibleInstances, GADTs, StandaloneDeriving #-}
 module Data.Dimensions
   (
-   Scale(..),
-   Power(..),
+   IntClass(..),
+   IntType,
    Quantity(..)
   )
   where
@@ -11,63 +11,42 @@ module Data.Dimensions
 import GHC.TypeNats
 
 
-data Whole
-data Kilo
-data Mega
-data Giga
-data Tera
-data Peta
-data Exa
-data Zetta
-data Yotta
-data Milli
-data Micro
-data Nano
-data Pico
-data Femto
-data Atto
-data Zepto
-data Yocto
-
-
-class Scale scale
-instance Scale Whole
-instance Scale Mega
-instance Scale Giga
-instance Scale Tera
-instance Scale Peta
-instance Scale Exa
-instance Scale Zetta
-instance Scale Yotta
-instance Scale Milli
-instance Scale Micro
-instance Scale Nano
-instance Scale Pico
-instance Scale Femto
-instance Scale Atto
-instance Scale Zepto
-instance Scale Yocto
-
-
+data IntType :: * -> Nat -> *
 data Negative
 data NonNegative
-
-data PowerType :: * -> Nat -> *
-
-class Power power
-instance Power (PowerType NonNegative num)
-instance (1 <= num) => Power (PowerType Negative num)
+class IntClass int
+instance IntClass (IntType NonNegative num)
+instance (1 <= num) => IntClass (IntType Negative num)
 
 
-data Quantity scale power num where
-  Quantity :: forall scale negativity power num
-              . (Scale scale,
-                 Power (PowerType negativity power),
+type Whole = IntType NonNegative 0
+type Kilo = IntType NonNegative 3
+type Mega = IntType NonNegative 6
+type Giga = IntType NonNegative 9
+type Tera = IntType NonNegative 12
+type Peta = IntType NonNegative 15
+type Exa = IntType NonNegative 18
+type Zetta = IntType NonNegative 21
+type Yotta = IntType NonNegative 24
+type Milli = IntType Negative 3
+type Micro = IntType Negative 6
+type Nano = IntType Negative 9
+type Pico = IntType Negative 12
+type Femto = IntType Negative 15
+type Atto = IntType Negative 18
+type Zepto = IntType Negative 21
+type Yocto = IntType Negative 24
+
+
+data Quantity scale int num where
+  Quantity :: forall scale power num
+              . (IntClass scale,
+                 IntClass power,
                  Num num)
               => num
-              -> Quantity scale (PowerType negativity power) num
+              -> Quantity scale power num
 
 
 deriving instance
-  (Scale scale, Power (PowerType negativity power), Num num)
-  => Eq (Quantity scale (PowerType negativity power) num)
+  (IntClass scale, IntClass power, Num num)
+  => Eq (Quantity scale power num)
