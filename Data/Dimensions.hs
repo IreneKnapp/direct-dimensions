@@ -1,5 +1,5 @@
 {-# LANGUAGE TypeNaturals, ExistentialQuantification, FlexibleContexts,
-             FlexibleInstances, GADTs, StandaloneDeriving #-}
+             FlexibleInstances, GADTs, StandaloneDeriving, TypeFamilies #-}
 module Data.Dimensions
   (
    IntClass(..),
@@ -17,6 +17,29 @@ data NonNegative
 class IntClass int
 instance IntClass (IntType NonNegative num)
 instance (1 <= num) => IntClass (IntType Negative num)
+
+
+type family PlusInt a b
+type instance PlusInt (IntType NonNegative a) (IntType NonNegative b) =
+  IntType NonNegative (a + b)
+type instance PlusInt (IntType Negative a) (IntType Negative b) =
+  IntType Negative (a + b)
+type instance (a + b ~ ab)
+              => PlusInt (IntType NonNegative ab)
+                         (IntType Negative b) =
+  IntType NonNegative a
+type instance (a + b ~ ab)
+              => PlusInt (IntType NonNegative a)
+                         (IntType Negative ab) =
+  IntType Negative b
+type instance (a + b ~ ab)
+              => PlusInt (IntType Negative ab)
+                         (IntType NonNegative b) =
+  IntType Negative a
+type instance (a + b ~ ab)
+              => PlusInt (IntType Negative a)
+                         (IntType NonNegative ab) =
+  IntType NonNegative b
 
 
 type Whole = IntType NonNegative 0
